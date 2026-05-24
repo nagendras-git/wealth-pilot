@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="WealthPilot">
 <title>WealthPilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ── TOKENS ── */
 :root{
@@ -18,7 +18,7 @@
   --amber:#d97706;--amber-l:#fffbeb;
   --red:#e02424;--red-l:#fef2f2;
   --purple:#7c3aed;--purple-l:#f5f3ff;
-  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
   --radius:10px;--radius-lg:14px;
@@ -54,6 +54,9 @@
   --card-icon-red:#2e0e0e;--card-icon-gray:#262626;
   --modal-bg:#1c1c1c;--overlay:rgba(0,0,0,.7);
   --toggle-bg:#3a3a3a;--toggle-knob:#f0f0f0;
+  --blue:#5b9cf6;
+  --green:#34d399;
+  --red-l:#2e0e0e;
 }
 [data-theme="dark"] #themeColor{ content:"#0f1117" }
 
@@ -232,6 +235,8 @@ body{padding-top:var(--safe-top);padding-bottom:0}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 .last-upd{text-align:center;font-size:var(--fs-xs);color:var(--txt3);padding:20px 16px 8px;font-family:var(--mono)}
+.add-btn{width:100%;padding:11px;margin-bottom:8px;background:transparent;border:1.5px dashed var(--border2);border-radius:var(--radius);font-size:var(--fs-sm);font-weight:600;color:var(--blue);cursor:pointer;transition:background .15s}
+.add-btn:active{background:var(--bg3)}
 </style>
 </head>
 <body>
@@ -374,6 +379,17 @@ function render(pg){
   if(pg==='settings') renderSettings();
 }
 
+// ── PROJECTION HELPER (monthly compounding) ──────────────────────────────
+// Lumpsum grows at 12% p.a. compounded monthly
+// SIP grows using future value of annuity with monthly rate
+function projCalc(lumpsum, monthlyS, years){
+  const r = 0.12 / 12; // monthly rate
+  const n = years * 12; // total months
+  const lumpsumFV = lumpsum * Math.pow(1 + r, n);
+  const sipFV = monthlyS * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+  return lumpsumFV + sipFV;
+}
+
 // ── HOME ─────────────────────────────────────────────────────────────────
 function renderHome(){
   const tot=total(), inv=invested(), gain=tot-inv;
@@ -425,12 +441,11 @@ function renderHome(){
       <div class="sec-hd">Equity corpus projection (12% CAGR)</div>
       <div class="proj-row">
         ${[1,3,5,10].map(yr=>{
-          const base=catval('equity')+catval('elss')+catval('etf');
-          const v=base*Math.pow(1.12,yr)+sipTot*12*((Math.pow(1.12,yr)-1)/0.12);
+          const v=projCalc(catval('equity')+catval('elss')+catval('etf'), sipTot, yr);
           return `<div class="proj-cell"><div class="proj-yr">${yr} yr</div><div class="proj-amt">${INR(v)}</div></div>`;
         }).join('')}
       </div>
-      <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Equity MF + ETF base · SIP ${INR(sipTot)}/mo · simplified</div>
+      <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Equity MF + ETF base · SIP ${INR(sipTot)}/mo · monthly compounding 12% p.a.</div>
     </div>
     <div class="last-upd">Last updated · ${new Date(D.lastUpdated).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
     <div class="pg-spacer"></div>
@@ -470,7 +485,6 @@ function renderAssets(){
   let html='';
   secs.forEach(sec=>{
     const items=D.assets.filter(a=>sec.cats.includes(a.cat));
-    if(!items.length) return;
     const secTotal=sum(items.map(a=>a.val));
     let inner='';
     items.forEach(a=>{
@@ -487,7 +501,8 @@ function renderAssets(){
         </div>
       </div>`;
     });
-    html+=csec(sec.id, sec.title, INR(secTotal), inner, sec.id==='eq');
+    inner+=`<button onclick="addFund('${sec.cats[0]}')" class="add-btn">+ Add fund</button>`;
+    html+=csec(sec.id, sec.title, secTotal?INR(secTotal):'', inner, sec.id==='eq');
   });
 
   // L1 bank collapsible
@@ -572,13 +587,13 @@ function renderSip(){
   const barsHtml=D.sips.map(s=>`<div class="sip-item" onclick="editSip('${s.id}')">
     <div class="sip-row"><div class="sip-name">${s.name}</div><div class="sip-amt">${INR(s.amount)}</div></div>
     <div class="sip-bar-track"><div class="sip-bar-fill" style="width:${(s.amount/sipTot*100).toFixed(1)}%;background:${s.color}"></div></div>
-  </div>`).join('');
+  </div>`).join('')+`<button onclick="addSip()" class="add-btn">+ Add SIP</button>`;
 
   const projHtml=`<div class="proj-row">${[3,5,7,10].map(yr=>{
-    const v=eq*Math.pow(1.12,yr)+sipTot*12*((Math.pow(1.12,yr)-1)/0.12);
+    const v=projCalc(eq, sipTot, yr);
     return `<div class="proj-cell"><div class="proj-yr">${yr} yr</div><div class="proj-amt">${INR(v)}</div></div>`;
   }).join('')}</div>
-  <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Base ${INR(eq)} · SIP ${INR(sipTot)}/mo · 12% CAGR</div>`;
+  <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Base ${INR(eq)} · SIP ${INR(sipTot)}/mo · monthly compounding 12% p.a.</div>`;
 
   const cashHtml=`<div class="card" style="margin-bottom:0">
     <div class="info-row"><span class="info-key">Salary</span><span class="info-val">${INR(D.salary)}</span></div>
@@ -763,11 +778,39 @@ function openGlobalEdit(){
 
 function editAsset(id){
   const a=D.assets.find(x=>x.id===id);
-  openModal(a.name,'Update current value and cost basis',`
+  const cats=['equity','elss','etf','liquidity','retire'];
+  const catOpts=cats.map(c=>`<option value="${c}"${a.cat===c?' selected':''}>${c}</option>`).join('');
+  const icons=['📈','📊','🔺','🛡','🥇','🌐','⚖️','🔒','🏛','📮','🔐','💰','📉','🏦'];
+  const iconOpts=icons.map(i=>`<option value="${i}"${a.icon===i?' selected':''}>${i}</option>`).join('');
+  openModal(a.name,'Edit fund details — tap Delete to remove',`
+    <div class="field"><div class="field-lbl">Fund name</div><input class="field-inp" id="f-name" type="text" value="${a.name}"></div>
     <div class="field"><div class="field-lbl">Current value (₹)</div><input class="field-inp" id="f-val" type="number" value="${a.val}" inputmode="numeric"></div>
     <div class="field"><div class="field-lbl">Invested / cost basis (₹)</div><input class="field-inp" id="f-inv" type="number" value="${a.inv}" inputmode="numeric"></div>
     <div class="field"><div class="field-lbl">Units / notes</div><input class="field-inp" id="f-meta" type="text" value="${a.meta}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="field"><div class="field-lbl">Category</div><select class="field-inp" id="f-cat">${catOpts}</select></div>
+      <div class="field"><div class="field-lbl">Icon</div><select class="field-inp" id="f-icon">${iconOpts}</select></div>
+    </div>
+    <button onclick="deleteAsset('${id}')" style="width:100%;margin-top:6px;padding:11px;background:var(--red-l);color:var(--red);border:1px solid rgba(224,36,36,.25);border-radius:8px;font-size:var(--fs-base);font-weight:600;cursor:pointer">Delete this fund</button>
   `,'asset:'+id);
+}
+
+function deleteAsset(id){
+  if(!confirm('Delete this fund? This cannot be undone.')) return;
+  D.assets=D.assets.filter(a=>a.id!==id);
+  D.lastUpdated=new Date().toISOString();
+  persist(D); closeModal(); render(curPg);
+  toast('Fund deleted');
+}
+
+function addFund(cat){
+  const catLabels={equity:'Core equity',elss:'ELSS',etf:'ETF',liquidity:'Liquidity',retire:'Retirement'};
+  openModal('Add new fund','New fund will appear in '+catLabels[cat],`
+    <div class="field"><div class="field-lbl">Fund name</div><input class="field-inp" id="f-name" type="text" placeholder="e.g. Mirae Asset Large Cap"></div>
+    <div class="field"><div class="field-lbl">Current value (₹)</div><input class="field-inp" id="f-val" type="number" value="0" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">Invested / cost basis (₹)</div><input class="field-inp" id="f-inv" type="number" value="0" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">Units / notes</div><input class="field-inp" id="f-meta" type="text" placeholder="e.g. Direct · 100 units"></div>
+  `,'add:'+cat);
 }
 
 function editL1(){
@@ -778,9 +821,27 @@ function editL1(){
 
 function editSip(id){
   const s=D.sips.find(x=>x.id===id);
-  openModal(s.name,'Update monthly SIP amount',`
+  openModal(s.name,'Update SIP — tap Delete to remove',`
+    <div class="field"><div class="field-lbl">Fund name</div><input class="field-inp" id="f-sipname" type="text" value="${s.name}"></div>
     <div class="field"><div class="field-lbl">Monthly SIP amount (₹)</div><input class="field-inp" id="f-sipamt" type="number" value="${s.amount}" inputmode="numeric"></div>
+    <button onclick="deleteSip('${id}')" style="width:100%;margin-top:6px;padding:11px;background:var(--red-l);color:var(--red);border:1px solid rgba(224,36,36,.25);border-radius:8px;font-size:var(--fs-base);font-weight:600;cursor:pointer">Delete this SIP</button>
   `,'sip:'+id);
+}
+
+function deleteSip(id){
+  if(!confirm('Delete this SIP?')) return;
+  D.sips=D.sips.filter(s=>s.id!==id);
+  D.lastUpdated=new Date().toISOString();
+  persist(D); closeModal(); render(curPg);
+  toast('SIP deleted');
+}
+
+function addSip(){
+  const colors=['#3b82f6','#6366f1','#ef4444','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#14b8a6'];
+  openModal('Add new SIP','Add a new monthly SIP',`
+    <div class="field"><div class="field-lbl">Fund name</div><input class="field-inp" id="f-sipname" type="text" placeholder="e.g. Nippon India Small Cap"></div>
+    <div class="field"><div class="field-lbl">Monthly SIP amount (₹)</div><input class="field-inp" id="f-sipamt" type="number" value="0" inputmode="numeric"></div>
+  `,'add-sip');
 }
 
 function saveModal(){
@@ -793,18 +854,53 @@ function saveModal(){
     D.l1 = +document.getElementById('f-l1').value;
   } else if(mMode&&mMode.startsWith('asset:')){
     const a=D.assets.find(x=>x.id===mMode.split(':')[1]);
+    a.name = document.getElementById('f-name').value||a.name;
     a.val  = +document.getElementById('f-val').value;
     a.inv  = +document.getElementById('f-inv').value;
     a.meta = document.getElementById('f-meta').value;
+    a.cat  = document.getElementById('f-cat').value;
+    a.icon = document.getElementById('f-icon').value;
+    // update badge class based on cat
+    const bdMap={equity:'bd-blue',elss:'bd-purple',etf:'bd-amber',liquidity:'bd-green',retire:'bd-green'};
+    const bgMap={equity:'card-icon-blue',elss:'card-icon-purple',etf:'card-icon-amber',liquidity:'card-icon-green',retire:'card-icon-green'};
+    const tagMap={equity:'Equity',elss:'ELSS',etf:'ETF',liquidity:'Liquidity',retire:'Debt'};
+    a.bd=bdMap[a.cat]; a.bg=bgMap[a.cat]; a.tag=tagMap[a.cat];
+  } else if(mMode&&mMode.startsWith('add:')){
+    const cat=mMode.split(':')[1];
+    const name=document.getElementById('f-name').value.trim();
+    if(!name){ toast('Fund name required'); return; }
+    const bdMap={equity:'bd-blue',elss:'bd-purple',etf:'bd-amber',liquidity:'bd-green',retire:'bd-green'};
+    const bgMap={equity:'card-icon-blue',elss:'card-icon-purple',etf:'card-icon-amber',liquidity:'card-icon-green',retire:'card-icon-green'};
+    const tagMap={equity:'Equity',elss:'ELSS',etf:'ETF',liquidity:'Liquidity',retire:'Debt'};
+    const iconMap={equity:'📈',elss:'🛡',etf:'🌐',liquidity:'⚖️',retire:'🏛'};
+    D.assets.push({
+      id:'a'+Date.now(), name, cat,
+      val:  +document.getElementById('f-val').value||0,
+      inv:  +document.getElementById('f-inv').value||0,
+      meta: document.getElementById('f-meta').value||'',
+      tag:tagMap[cat], bd:bdMap[cat], bg:bgMap[cat], icon:iconMap[cat]
+    });
+    toast('Fund added');
   } else if(mMode==='l1'){
     D.l1 = +document.getElementById('f-l1b').value;
   } else if(mMode&&mMode.startsWith('sip:')){
     const s=D.sips.find(x=>x.id===mMode.split(':')[1]);
+    s.name   = document.getElementById('f-sipname').value||s.name;
     s.amount = +document.getElementById('f-sipamt').value||s.amount;
+  } else if(mMode==='add-sip'){
+    const name=document.getElementById('f-sipname').value.trim();
+    if(!name){ toast('Fund name required'); return; }
+    const colors=['#3b82f6','#6366f1','#ef4444','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#14b8a6'];
+    D.sips.push({
+      id:'s'+Date.now(), name,
+      amount:+document.getElementById('f-sipamt').value||0,
+      color: colors[D.sips.length % colors.length]
+    });
+    toast('SIP added');
   }
   D.lastUpdated=new Date().toISOString();
   persist(D); closeModal(); render(curPg);
-  toast('Saved');
+  if(!mMode?.startsWith('add')) toast('Saved');
 }
 
 // ── INIT ────────────────────────────────────────────────────────────────
