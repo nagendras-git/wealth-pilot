@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="WealthPilot">
 <title>WealthPilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ── TOKENS ── */
 :root{
@@ -18,7 +18,7 @@
   --amber:#d97706;--amber-l:#fffbeb;
   --red:#e02424;--red-l:#fef2f2;
   --purple:#7c3aed;--purple-l:#f5f3ff;
-  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
   --radius:10px;--radius-lg:14px;
@@ -60,8 +60,6 @@
 /* ── RESET ── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--font);font-size:var(--fs-base);line-height:1.5;transition:background .2s,color .2s}
-body{padding-top:var(--safe-top);padding-bottom:calc(64px + var(--safe-bottom))}
-
 /* ── HEADER ── */
 .hdr{position:sticky;top:var(--safe-top);z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
 .hdr-brand{display:flex;align-items:center;gap:8px}
@@ -74,6 +72,8 @@ body{padding-top:var(--safe-top);padding-bottom:calc(64px + var(--safe-bottom))}
 .btn-hdr-ghost{background:var(--bg3);color:var(--txt2);font-size:var(--fs-sm);font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid var(--border2);cursor:pointer}
 .btn-hdr:active,.btn-hdr-ghost:active{opacity:.8}
 
+body{padding-top:var(--safe-top);padding-bottom:0}
+
 /* ── BOTTOM NAV ── */
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg2);border-top:1px solid var(--border);display:flex;padding-bottom:var(--safe-bottom);box-shadow:0 -1px 6px rgba(0,0,0,.06)}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;cursor:pointer;border:none;background:none;transition:opacity .1s}
@@ -84,9 +84,23 @@ body{padding-top:var(--safe-top);padding-bottom:calc(64px + var(--safe-bottom))}
 .bni.act::after{content:'';position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--blue);border-radius:0 0 2px 2px}
 
 /* ── PAGES ── */
-.pg{display:none;padding:0 0 8px}
+.pg{display:none}
 .pg.act{display:block}
+.pg-spacer{height:calc(88px + var(--safe-bottom))}
 .section{padding:14px 16px 0}
+
+/* ── COLLAPSIBLE SECTIONS ── */
+.csec{padding:14px 16px 0}
+.csec-hd{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:0;user-select:none}
+.csec-hd-left{font-size:var(--fs-xs);font-weight:600;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase}
+.csec-hd-right{display:flex;align-items:center;gap:8px}
+.csec-total{font-size:var(--fs-xs);font-weight:600;color:var(--txt2);font-family:var(--mono)}
+.csec-chevron{font-size:14px;color:var(--txt4);transition:transform .22s;line-height:1}
+.csec-hd.open .csec-chevron{transform:rotate(180deg)}
+.csec-body{overflow:hidden;transition:max-height .28s ease,opacity .22s;max-height:0;opacity:0}
+.csec-body.open{max-height:2000px;opacity:1}
+.csec-body-inner{padding-top:10px}
+
 .sec-hd{font-size:var(--fs-xs);font-weight:600;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
 
 /* ── HERO ── */
@@ -217,7 +231,7 @@ body{padding-top:var(--safe-top);padding-bottom:calc(64px + var(--safe-bottom))}
 .toast{position:fixed;bottom:calc(72px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--txt);color:var(--bg);font-size:var(--fs-sm);font-weight:500;padding:10px 20px;border-radius:20px;z-index:300;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.last-upd{text-align:center;font-size:var(--fs-xs);color:var(--txt4);padding:16px;font-family:var(--mono)}
+.last-upd{text-align:center;font-size:var(--fs-xs);color:var(--txt3);padding:20px 16px 8px;font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -419,26 +433,49 @@ function renderHome(){
       <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Equity MF + ETF base · SIP ${INR(sipTot)}/mo · simplified</div>
     </div>
     <div class="last-upd">Last updated · ${new Date(D.lastUpdated).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+    <div class="pg-spacer"></div>
   `;
+}
+
+// ── COLLAPSIBLE HELPER ────────────────────────────────────────────────────
+function csec(id, title, totalVal, innerHtml, defaultOpen=true){
+  const o=defaultOpen;
+  return `<div class="csec">
+    <div class="csec-hd${o?' open':''}" onclick="toggleSec('${id}',this)">
+      <span class="csec-hd-left">${title}</span>
+      <div class="csec-hd-right">
+        ${totalVal?`<span class="csec-total">${totalVal}</span>`:''}
+        <span class="csec-chevron">▾</span>
+      </div>
+    </div>
+    <div class="csec-body${o?' open':''}" id="csec-${id}">
+      <div class="csec-body-inner">${innerHtml}</div>
+    </div>
+  </div>`;
+}
+function toggleSec(id, hd){
+  hd.classList.toggle('open');
+  document.getElementById('csec-'+id).classList.toggle('open');
 }
 
 // ── ASSETS ───────────────────────────────────────────────────────────────
 function renderAssets(){
   const secs=[
-    {title:'Core equity — mutual funds', cats:['equity']},
-    {title:'ELSS (tax saving)',           cats:['elss']},
-    {title:'ETFs — opportunistic lumpsum',cats:['etf']},
-    {title:'Liquidity funds',             cats:['liquidity']},
-    {title:'Retirement / debt',           cats:['retire']},
+    {id:'eq',    title:'Core equity — mutual funds', cats:['equity']},
+    {id:'elss',  title:'ELSS (tax saving)',           cats:['elss']},
+    {id:'etf',   title:'ETFs — opportunistic lumpsum',cats:['etf']},
+    {id:'liq',   title:'Liquidity funds',             cats:['liquidity']},
+    {id:'ret',   title:'Retirement / debt',           cats:['retire']},
   ];
   let html='';
   secs.forEach(sec=>{
     const items=D.assets.filter(a=>sec.cats.includes(a.cat));
     if(!items.length) return;
-    html+=`<div class="section"><div class="sec-hd">${sec.title}</div>`;
+    const secTotal=sum(items.map(a=>a.val));
+    let inner='';
     items.forEach(a=>{
       const p=gainPct(a.val,a.inv), pc=gclass(a.val,a.inv);
-      html+=`<div class="acard" onclick="editAsset('${a.id}')">
+      inner+=`<div class="acard" onclick="editAsset('${a.id}')">
         <div class="acard-icon" style="background:var(--${a.bg})">${a.icon}</div>
         <div class="acard-body">
           <div class="acard-name">${a.name}<span class="badge ${a.bd}">${a.tag}</span></div>
@@ -450,30 +487,31 @@ function renderAssets(){
         </div>
       </div>`;
     });
-    html+='</div>';
+    html+=csec(sec.id, sec.title, INR(secTotal), inner, sec.id==='eq');
   });
-  html+=`<div class="section"><div class="sec-hd">Emergency savings — IDFC First Bank</div>
-    <div class="acard" onclick="editL1()">
-      <div class="acard-icon" style="background:var(--card-icon-blue)">🏦</div>
-      <div class="acard-body">
-        <div class="acard-name">IDFC First Bank<span class="badge bd-blue">L1</span></div>
-        <div class="acard-meta">Target ${INR(D.expenses*4)} · 4 months expenses</div>
-      </div>
-      <div class="acard-right">
-        <div class="acard-val">${D.l1?INR(D.l1):'—'}</div>
-        <div class="acard-pnl neu">${D.l1?(D.l1/(D.expenses*4)*100).toFixed(0)+'% filled':'Not started'}</div>
-      </div>
+
+  // L1 bank collapsible
+  const l1Inner=`<div class="acard" onclick="editL1()">
+    <div class="acard-icon" style="background:var(--card-icon-blue)">🏦</div>
+    <div class="acard-body">
+      <div class="acard-name">IDFC First Bank<span class="badge bd-blue">L1</span></div>
+      <div class="acard-meta">Target ${INR(D.expenses*4)} · 4 months expenses</div>
+    </div>
+    <div class="acard-right">
+      <div class="acard-val">${D.l1?INR(D.l1):'—'}</div>
+      <div class="acard-pnl neu">${D.l1?(D.l1/(D.expenses*4)*100).toFixed(0)+'% filled':'Not started'}</div>
     </div>
   </div>`;
+  html+=csec('l1bank','Emergency savings — IDFC Bank', D.l1?INR(D.l1):'', l1Inner, true);
+
   const tot=total();
-  html+=`<div class="section"><div class="sec-hd">Summary</div>
-    <div class="card">
-      <div class="info-row"><span class="info-key">Total assets</span><span class="info-val">${INR(tot)}</span></div>
-      <div class="info-row"><span class="info-key">Total invested</span><span class="info-val">${INR(invested())}</span></div>
-      <div class="info-row"><span class="info-key">Overall gain/loss</span><span class="info-val ${gclass(tot,invested())}">${gainPct(tot,invested())}</span></div>
-    </div>
+  const sumInner=`<div class="card" style="margin-bottom:0">
+    <div class="info-row"><span class="info-key">Total assets</span><span class="info-val">${INR(tot)}</span></div>
+    <div class="info-row"><span class="info-key">Total invested</span><span class="info-val">${INR(invested())}</span></div>
+    <div class="info-row"><span class="info-key">Overall gain/loss</span><span class="info-val ${gclass(tot,invested())}">${gainPct(tot,invested())}</span></div>
   </div>`;
-  document.getElementById('pg-assets').innerHTML=html+`<div class="last-upd">Tap any card to update its value</div>`;
+  html+=csec('sum','Summary','',sumInner,true);
+  document.getElementById('pg-assets').innerHTML=html+`<div class="last-upd">Tap any card to update · tap header to collapse</div><div class="pg-spacer"></div>`;
 }
 
 // ── BUCKETS ──────────────────────────────────────────────────────────────
@@ -495,7 +533,10 @@ function renderBuckets(){
     <div class="bkt-tgt">of ${INR(b.target)}</div>
     <div class="bkt-bar"><div class="bkt-fill" style="width:${b.pct.toFixed(1)}%;background:${b.color}"></div></div>
   </div>`).join('');
-  const detail=buckets.map(b=>{
+
+  const overviewHtml=`<div class="bkt-grid">${mini}</div>`;
+
+  const detailHtml=buckets.map(b=>{
     const p=b.pct.toFixed(0);
     const tbg=b.pct>=100?'#dcfce7':b.pct>=50?'#fef9c3':'#fee2e2';
     const tc=b.pct>=100?'#166534':b.pct>=50?'#854d0e':'#991b1b';
@@ -508,17 +549,18 @@ function renderBuckets(){
       <div class="bkt-nums"><span>${b.val?INR(b.val):'₹0'}</span><span>Need ${INR(Math.max(0,b.target-b.val))}</span><span>Target ${INR(b.target)}</span></div>
     </div>`;
   }).join('');
-  document.getElementById('pg-buckets').innerHTML=`
-    <div class="section" style="margin-top:4px"><div class="sec-hd">3-layer liquidity ladder</div><div class="bkt-grid">${mini}</div></div>
-    <div class="section"><div class="sec-hd">Bucket detail</div>${detail}</div>
-    <div class="section"><div class="sec-hd">Refill capacity</div>
-      <div class="card">
-        <div class="info-row"><span class="info-key">Buffer (salary − expenses − SIPs)</span><span class="info-val" style="color:var(--blue)">${INR(surplus-sipTot)}</span></div>
-        <div class="info-row"><span class="info-key">Lumpsum (when received)</span><span class="info-val">Top up buckets first</span></div>
-        <div class="info-row"><span class="info-key">Refill order</span><span class="info-val">L1 → L2 → L3</span></div>
-      </div>
-    </div>
-    <div class="last-upd">Refill before deploying extra to equity</div>`;
+
+  const refillHtml=`<div class="card" style="margin-bottom:0">
+    <div class="info-row"><span class="info-key">Buffer (salary − expenses − SIPs)</span><span class="info-val" style="color:var(--blue)">${INR(surplus-sipTot)}</span></div>
+    <div class="info-row"><span class="info-key">Lumpsum (when received)</span><span class="info-val">Top up buckets first</span></div>
+    <div class="info-row"><span class="info-key">Refill order</span><span class="info-val">L1 → L2 → L3</span></div>
+  </div>`;
+
+  document.getElementById('pg-buckets').innerHTML=
+    csec('bkt-overview','3-layer liquidity ladder','',overviewHtml,true)+
+    csec('bkt-detail','Bucket detail','',detailHtml,true)+
+    csec('bkt-refill','Refill capacity','',refillHtml,false)+
+    `<div class="last-upd">Refill before deploying extra to equity</div><div class="pg-spacer"></div>`;
 }
 
 // ── SIP ──────────────────────────────────────────────────────────────────
@@ -526,36 +568,37 @@ function renderSip(){
   const sipTot=sum(D.sips.map(s=>s.amount));
   const surplus=D.salary-D.expenses;
   const eq=catval('equity')+catval('elss')+catval('etf');
-  const bars=D.sips.map(s=>`<div class="sip-item" onclick="editSip('${s.id}')">
+
+  const barsHtml=D.sips.map(s=>`<div class="sip-item" onclick="editSip('${s.id}')">
     <div class="sip-row"><div class="sip-name">${s.name}</div><div class="sip-amt">${INR(s.amount)}</div></div>
     <div class="sip-bar-track"><div class="sip-bar-fill" style="width:${(s.amount/sipTot*100).toFixed(1)}%;background:${s.color}"></div></div>
   </div>`).join('');
-  const proj=[3,5,7,10].map(yr=>{
+
+  const projHtml=`<div class="proj-row">${[3,5,7,10].map(yr=>{
     const v=eq*Math.pow(1.12,yr)+sipTot*12*((Math.pow(1.12,yr)-1)/0.12);
     return `<div class="proj-cell"><div class="proj-yr">${yr} yr</div><div class="proj-amt">${INR(v)}</div></div>`;
-  }).join('');
+  }).join('')}</div>
+  <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Base ${INR(eq)} · SIP ${INR(sipTot)}/mo · 12% CAGR</div>`;
+
+  const cashHtml=`<div class="card" style="margin-bottom:0">
+    <div class="info-row"><span class="info-key">Salary</span><span class="info-val">${INR(D.salary)}</span></div>
+    <div class="info-row"><span class="info-key">Expenses</span><span class="info-val">${INR(D.expenses)}</span></div>
+    <div class="info-row"><span class="info-key">Surplus</span><span class="info-val">${INR(surplus)}</span></div>
+    <div class="info-row"><span class="info-key">SIPs</span><span class="info-val">${INR(sipTot)}</span></div>
+    <div class="info-row"><span class="info-key">Free cash</span><span class="info-val pos">${INR(surplus-sipTot)}</span></div>
+  </div>`;
+
   document.getElementById('pg-sip').innerHTML=`
     <div class="hero">
       <div class="hero-lbl">Monthly SIP total</div>
       <div class="hero-amt">${INR(sipTot)}</div>
       <div class="hero-sub">${(sipTot/surplus*100).toFixed(0)}% of surplus · Free cash ${INR(surplus-sipTot)}</div>
       <div class="hero-chips"><div class="chip">Equity base ${INR(eq)}</div></div>
-    </div>
-    <div class="section"><div class="sec-hd">SIP breakdown — tap to edit</div>${bars}</div>
-    <div class="section"><div class="sec-hd">Corpus projection (12% CAGR + SIP)</div>
-      <div class="proj-row">${proj}</div>
-      <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Base ${INR(eq)} · SIP ${INR(sipTot)}/mo</div>
-    </div>
-    <div class="section"><div class="sec-hd">Cashflow</div>
-      <div class="card">
-        <div class="info-row"><span class="info-key">Salary</span><span class="info-val">${INR(D.salary)}</span></div>
-        <div class="info-row"><span class="info-key">Expenses</span><span class="info-val">${INR(D.expenses)}</span></div>
-        <div class="info-row"><span class="info-key">Surplus</span><span class="info-val">${INR(surplus)}</span></div>
-        <div class="info-row"><span class="info-key">SIPs</span><span class="info-val">${INR(sipTot)}</span></div>
-        <div class="info-row"><span class="info-key">Free cash</span><span class="info-val pos">${INR(surplus-sipTot)}</span></div>
-      </div>
-    </div>
-    <div class="last-upd">Tap any SIP row to update amount</div>`;
+    </div>`+
+    csec('sip-funds','SIP breakdown — tap to edit',INR(sipTot),barsHtml,true)+
+    csec('sip-proj','Corpus projection (12% CAGR + SIP)','',projHtml,true)+
+    csec('sip-cash','Monthly cashflow','',cashHtml,false)+
+    `<div class="last-upd">Tap any SIP row to update amount</div><div class="pg-spacer"></div>`;
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────
@@ -635,6 +678,7 @@ function renderSettings(){
       </div>
     </div>
     <div class="last-upd">All data stored locally on your device only</div>
+    <div class="pg-spacer"></div>
   `;
 }
 
