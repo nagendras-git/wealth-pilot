@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-size="md">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" id="themeColor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default" id="appleStatus">
+<meta name="apple-mobile-web-app-title" content="WealthPilot">
+<title>WealthPilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root{
+  --blue:#1a56db;--blue-l:#eff4ff;--blue-m:#3b82f6;
+  --green:#0e9f6e;--green-l:#f0fdf4;
+  --amber:#d97706;--amber-l:#fffbeb;
+  --red:#e02424;--red-l:#fef2f2;
+  --purple:#7c3aed;--purple-l:#f5f3ff;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 8px rgba(0,0,0,.08);
+  /* size tokens — overridden per data-size */
+  --fs-xs:11px;--fs-sm:12px;--fs-base:14px;--fs-md:16px;--fs-lg:18px;--fs-xl:24px;--fs-2xl:30px;
+}
+[data-size="sm"]{ --fs-xs:10px;--fs-sm:11px;--fs-base:13px;--fs-md:15px;--fs-lg:17px;--fs-xl:22px;--fs-2xl:27px; }
+[data-size="lg"]{ --fs-xs:12px;--fs-sm:13px;--fs-base:15px;--fs-md:17px;--fs-lg:19px;--fs-xl:26px;--fs-2xl:33px; }
+[data-size="xl"]{ --fs-xs:13px;--fs-sm:14px;--fs-base:16px;--fs-md:18px;--fs-lg:21px;--fs-xl:28px;--fs-2xl:36px; }
+
+/* ── LIGHT THEME ── */
+[data-theme="light"]{
+  --bg:#f9fafb;--bg2:#ffffff;--bg3:#f3f4f6;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --txt:#111827;--txt2:#374151;--txt3:#6b7280;--txt4:#9ca3af;
+  --hero-bg:#1a56db;
+  --card-icon-blue:#eff4ff;--card-icon-green:#f0fdf4;
+  --card-icon-amber:#fffbeb;--card-icon-purple:#f5f3ff;
+  --card-icon-red:#fef2f2;--card-icon-gray:#f3f4f6;
+  --modal-bg:#ffffff;--overlay:rgba(0,0,0,.45);
+  --toggle-bg:#e5e7eb;--toggle-knob:#fff;
+}
+/* ── DARK THEME — neutral charcoal, no blue tint ── */
+[data-theme="dark"]{
+  --bg:#111111;--bg2:#1c1c1c;--bg3:#262626;
+  --border:#2e2e2e;--border2:#3a3a3a;
+  --txt:#f0f0f0;--txt2:#c0c0c0;--txt3:#888888;--txt4:#555555;
+  --hero-bg:#1a3a6b;
+  --card-icon-blue:#1a2d4a;--card-icon-green:#0d2e20;
+  --card-icon-amber:#2e1e06;--card-icon-purple:#221040;
+  --card-icon-red:#2e0e0e;--card-icon-gray:#262626;
+  --modal-bg:#1c1c1c;--overlay:rgba(0,0,0,.7);
+  --toggle-bg:#3a3a3a;--toggle-knob:#f0f0f0;
+}
+[data-theme="dark"] #themeColor{ content:"#0f1117" }
+
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--font);font-size:var(--fs-base);line-height:1.5;transition:background .2s,color .2s}
+body{padding-top:var(--safe-top);padding-bottom:calc(64px + var(--safe-bottom))}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:var(--safe-top);z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+.hdr-brand{display:flex;align-items:center;gap:8px}
+.hdr-logo{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.hdr-logo svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.hdr-title{font-size:var(--fs-md);font-weight:700;color:var(--txt);letter-spacing:-.3px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.hdr-date{font-size:var(--fs-xs);color:var(--txt4);font-family:var(--mono)}
+.btn-hdr{background:var(--blue);color:#fff;font-size:var(--fs-sm);font-weight:600;padding:7px 14px;border-radius:20px;border:none;cursor:pointer}
+.btn-hdr-ghost{background:var(--bg3);color:var(--txt2);font-size:var(--fs-sm);font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid var(--border2);cursor:pointer}
+.btn-hdr:active,.btn-hdr-ghost:active{opacity:.8}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg2);border-top:1px solid var(--border);display:flex;padding-bottom:var(--safe-bottom);box-shadow:0 -1px 6px rgba(0,0,0,.06)}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px;cursor:pointer;border:none;background:none;transition:opacity .1s}
+.bni-icon{font-size:18px;color:var(--txt4);line-height:1}
+.bni-label{font-size:var(--fs-xs);font-weight:500;color:var(--txt4)}
+.bni.act .bni-icon,.bni.act .bni-label{color:var(--blue)}
+.bni.act{position:relative}
+.bni.act::after{content:'';position:absolute;top:0;left:22%;right:22%;height:2px;background:var(--blue);border-radius:0 0 2px 2px}
+
+/* ── PAGES ── */
+.pg{display:none;padding:0 0 8px}
+.pg.act{display:block}
+.section{padding:14px 16px 0}
+.sec-hd{font-size:var(--fs-xs);font-weight:600;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+
+/* ── HERO ── */
+.hero{margin:14px 16px 0;background:var(--hero-bg);border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-30px;right:-30px;width:130px;height:130px;background:rgba(255,255,255,.07);border-radius:50%}
+.hero-lbl{font-size:var(--fs-xs);font-weight:500;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.hero-amt{font-size:var(--fs-2xl);font-weight:700;color:#fff;letter-spacing:-.8px;font-family:var(--mono)}
+.hero-sub{font-size:var(--fs-sm);color:rgba(255,255,255,.75);margin-top:4px}
+.hero-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.chip{font-size:var(--fs-xs);font-weight:500;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);margin-bottom:8px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat-lbl{font-size:var(--fs-xs);color:var(--txt3);font-weight:500;margin-bottom:5px}
+.stat-val{font-size:var(--fs-lg);font-weight:700;color:var(--txt);font-family:var(--mono)}
+.stat-sub{font-size:var(--fs-xs);color:var(--txt4);margin-top:3px}
+
+/* ── ALLOC ── */
+.alloc-bar{height:8px;border-radius:8px;display:flex;overflow:hidden;gap:2px;margin-bottom:10px}
+.alloc-legend{display:flex;flex-wrap:wrap;gap:6px 14px}
+.alloc-item{display:flex;align-items:center;gap:5px;font-size:var(--fs-xs);color:var(--txt3)}
+.alloc-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── ASSET CARD ── */
+.acard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s,background .15s}
+.acard:active{border-color:var(--blue);background:var(--bg3)}
+.acard-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.acard-body{flex:1;min-width:0}
+.acard-name{font-size:var(--fs-base);font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acard-meta{font-size:var(--fs-xs);color:var(--txt4);margin-top:2px}
+.acard-right{text-align:right;flex-shrink:0}
+.acard-val{font-size:var(--fs-base);font-weight:700;color:var(--txt);font-family:var(--mono)}
+.acard-pnl{font-size:var(--fs-xs);margin-top:2px;font-family:var(--mono)}
+.pos{color:var(--green)}.neg{color:var(--red)}.neu{color:var(--txt4)}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-left:5px;vertical-align:middle}
+.bd-blue{background:var(--card-icon-blue);color:var(--blue)}
+.bd-green{background:var(--card-icon-green);color:var(--green)}
+.bd-amber{background:var(--card-icon-amber);color:var(--amber)}
+.bd-purple{background:var(--card-icon-purple);color:var(--purple)}
+.bd-gray{background:var(--card-icon-gray);color:var(--txt3)}
+.bd-red{background:var(--card-icon-red);color:var(--red)}
+
+/* ── BUCKETS ── */
+.bkt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bkt{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
+.bkt-lbl{font-size:var(--fs-xs);font-weight:600;color:var(--txt4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.bkt-val{font-size:var(--fs-md);font-weight:700;color:var(--txt);font-family:var(--mono)}
+.bkt-tgt{font-size:10px;color:var(--txt4);margin-top:2px}
+.bkt-bar{height:4px;background:var(--bg3);border-radius:4px;margin-top:8px;overflow:hidden}
+.bkt-fill{height:100%;border-radius:4px}
+.bkt-detail{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:8px;box-shadow:var(--shadow)}
+.bkt-drow{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.bkt-dname{font-size:var(--fs-base);font-weight:600;color:var(--txt)}
+.bkt-dnote{font-size:var(--fs-xs);color:var(--txt4);margin-top:2px}
+.bkt-pct{font-size:var(--fs-sm);font-weight:700;padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.bkt-prog{height:6px;background:var(--bg3);border-radius:6px;overflow:hidden;margin-bottom:8px}
+.bkt-prog-fill{height:100%;border-radius:6px}
+.bkt-nums{display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--txt4);font-family:var(--mono)}
+
+/* ── SIP ── */
+.sip-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .15s}
+.sip-item:active{border-color:var(--blue)}
+.sip-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.sip-name{font-size:var(--fs-base);font-weight:600;color:var(--txt)}
+.sip-amt{font-size:var(--fs-md);font-weight:700;color:var(--blue);font-family:var(--mono)}
+.sip-bar-track{height:5px;background:var(--bg3);border-radius:5px;overflow:hidden}
+.sip-bar-fill{height:100%;border-radius:5px}
+
+/* ── PROJ ── */
+.proj-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.proj-cell{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.proj-yr{font-size:var(--fs-xs);color:var(--txt4);font-weight:500;margin-bottom:4px}
+.proj-amt{font-size:var(--fs-sm);font-weight:700;color:var(--blue);font-family:var(--mono)}
+
+/* ── INFO ROWS ── */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-key{font-size:var(--fs-sm);color:var(--txt3)}
+.info-val{font-size:var(--fs-sm);font-weight:600;color:var(--txt);font-family:var(--mono)}
+
+/* ── SETTINGS PAGE ── */
+.settings-section{padding:16px 16px 0}
+.settings-title{font-size:var(--fs-xs);font-weight:600;color:var(--txt3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+.settings-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.srow-left{flex:1}
+.srow-label{font-size:var(--fs-base);font-weight:500;color:var(--txt)}
+.srow-sub{font-size:var(--fs-xs);color:var(--txt4);margin-top:2px}
+/* Toggle */
+.toggle{position:relative;width:44px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:var(--toggle-bg);border-radius:13px;transition:background .2s;cursor:pointer}
+.toggle input:checked + .toggle-track{background:var(--blue)}
+.toggle-track::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:var(--toggle-knob);top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle input:checked + .toggle-track::after{transform:translateX(18px)}
+/* Size pills */
+.size-pills{display:flex;gap:6px;flex-shrink:0}
+.size-pill{padding:5px 12px;border-radius:20px;font-size:var(--fs-xs);font-weight:600;border:1px solid var(--border2);background:var(--bg3);color:var(--txt3);cursor:pointer;transition:all .15s}
+.size-pill.act{background:var(--blue);color:#fff;border-color:var(--blue)}
+/* Backup buttons */
+.backup-btns{display:flex;flex-direction:column;gap:8px;padding:0 16px 16px}
+.btn-backup{width:100%;padding:13px;border-radius:var(--radius);font-size:var(--fs-base);font-weight:600;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-export{background:var(--blue);color:#fff}
+.btn-import{background:var(--bg3);color:var(--txt2);border:1px solid var(--border2)}
+.btn-reset{background:var(--red-l);color:var(--red);border:1px solid rgba(224,36,36,.2)}
+.btn-backup:active{opacity:.85}
+#file-input{display:none}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;z-index:200;background:var(--overlay);backdrop-filter:blur(3px)}
+.overlay.open{display:flex;align-items:flex-end}
+.modal{background:var(--modal-bg);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:20px 16px calc(20px + var(--safe-bottom));border-top:1px solid var(--border)}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:var(--fs-lg);font-weight:700;color:var(--txt);margin-bottom:3px}
+.modal-sub{font-size:var(--fs-sm);color:var(--txt4);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field-lbl{font-size:var(--fs-xs);font-weight:600;color:var(--txt3);margin-bottom:5px;letter-spacing:.02em}
+.field-inp{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-family:var(--mono);font-size:var(--fs-base);padding:11px 12px;outline:none;transition:border-color .15s}
+.field-inp:focus{border-color:var(--blue)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.btn-save{flex:1;background:var(--blue);color:#fff;font-size:var(--fs-base);font-weight:600;padding:13px;border-radius:10px;border:none;cursor:pointer}
+.btn-cancel{flex:1;background:var(--bg3);color:var(--txt2);font-size:var(--fs-base);font-weight:500;padding:13px;border-radius:10px;border:1px solid var(--border);cursor:pointer}
+.btn-save:active,.btn-cancel:active{opacity:.85}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(72px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--txt);color:var(--bg);font-size:var(--fs-sm);font-weight:500;padding:10px 20px;border-radius:20px;z-index:300;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.last-upd{text-align:center;font-size:var(--fs-xs);color:var(--txt4);padding:16px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-logo">
+      <svg viewBox="0 0 24 24"><polyline points="2 17 9 10 13 14 22 5"/><polyline points="16 5 22 5 22 11"/></svg>
+    </div>
+    <span class="hdr-title">WealthPilot</span>
+  </div>
+  <div class="hdr-right">
+    <span class="hdr-date" id="hdrDate"></span>
+    <button class="btn-hdr" onclick="openGlobalEdit()">Edit</button>
+  </div>
+</header>
+
+<div id="pg-home"    class="pg act"></div>
+<div id="pg-assets"  class="pg"></div>
+<div id="pg-buckets" class="pg"></div>
+<div id="pg-sip"     class="pg"></div>
+<div id="pg-settings" class="pg"></div>
+
+<nav class="bnav">
+  <button class="bni act" onclick="nav(this,'home')">
+    <span class="bni-icon">⌂</span><span class="bni-label">Home</span>
+  </button>
+  <button class="bni" onclick="nav(this,'assets')">
+    <span class="bni-icon">◈</span><span class="bni-label">Assets</span>
+  </button>
+  <button class="bni" onclick="nav(this,'buckets')">
+    <span class="bni-icon">▣</span><span class="bni-label">Buckets</span>
+  </button>
+  <button class="bni" onclick="nav(this,'sip')">
+    <span class="bni-icon">↻</span><span class="bni-label">SIP</span>
+  </button>
+  <button class="bni" onclick="nav(this,'settings')">
+    <span class="bni-icon">⚙</span><span class="bni-label">Settings</span>
+  </button>
+</nav>
+
+<!-- Edit Modal -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub"   id="modal-sub"></div>
+    <div id="modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save"   onclick="saveModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="file-input" accept=".json" onchange="importJSON(event)">
+
+<script>
+// ── DEFAULT DATA ────────────────────────────────────────────────────────
+const DEF = {
+  salary:207165, expenses:68000,
+  lastUpdated: new Date().toISOString(),
+  l1: 0,
+  assets:[
+    {id:'ppfc',   name:'Parag Parikh Flexi Cap', meta:'Direct · 1,683 units', val:152801, inv:150982, tag:'Flexi cap',  bd:'bd-blue',   cat:'equity',    icon:'📈', bg:'card-icon-blue'},
+    {id:'hdfcmc', name:'HDFC Mid Cap Fund',       meta:'Direct · 707 units',   val:155856, inv:150172, tag:'Mid cap',   bd:'bd-blue',   cat:'equity',    icon:'📊', bg:'card-icon-blue'},
+    {id:'bandhan',name:'Bandhan Small Cap Fund',  meta:'Direct · 3,089 units', val:162013, inv:144988, tag:'Small cap', bd:'bd-red',    cat:'equity',    icon:'🔺', bg:'card-icon-red'},
+    {id:'axisels',name:'Axis ELSS Tax Saver',     meta:'Direct · 263 units',   val:27543,  inv:23001,  tag:'ELSS',     bd:'bd-purple', cat:'elss',      icon:'🛡', bg:'card-icon-purple'},
+    {id:'quantel',name:'Quant ELSS Tax Saver',    meta:'Direct · 27 units',    val:11900,  inv:10001,  tag:'ELSS',     bd:'bd-purple', cat:'elss',      icon:'🛡', bg:'card-icon-purple'},
+    {id:'goldbe', name:'GOLDBEES',                meta:'NSE · 1,040 units',    val:135720, inv:122576, tag:'Gold ETF',  bd:'bd-amber',  cat:'etf',       icon:'🥇', bg:'card-icon-amber'},
+    {id:'mon100', name:'MON100 (Nasdaq 100)',      meta:'NSE · 88 units',       val:29227,  inv:19911,  tag:'Intl ETF', bd:'bd-blue',   cat:'etf',       icon:'🌐', bg:'card-icon-blue'},
+    {id:'baf',    name:'HDFC Balanced Advantage',  meta:'L3 Liquidity · 253 units', val:139182, inv:139274, tag:'BAF',  bd:'bd-green',  cat:'liquidity', icon:'⚖️',bg:'card-icon-green'},
+    {id:'kotak',  name:'Kotak Arbitrage Fund',     meta:'L2 Liquidity · 1 unit',    val:41,     inv:41,     tag:'Arb',  bd:'bd-green',  cat:'liquidity', icon:'🔒', bg:'card-icon-green'},
+    {id:'epf',    name:'EPF',                      meta:'~8.1% p.a. · employer driven',       val:1658200, inv:1658200, tag:'Debt',   bd:'bd-green',  cat:'retire',    icon:'🏛', bg:'card-icon-green'},
+    {id:'ppf',    name:'PPF',                      meta:'7.1% p.a. · father\'s transfers',   val:342000,  inv:342000,  tag:'Debt',   bd:'bd-green',  cat:'retire',    icon:'📮', bg:'card-icon-green'},
+    {id:'nps',    name:'NPS',                      meta:'Stopped · exit after threshold',    val:117052,  inv:117052,  tag:'Locked', bd:'bd-gray',   cat:'retire',    icon:'🔐', bg:'card-icon-gray'},
+  ],
+  sips:[
+    {id:'s1',name:'Parag Parikh Flexi Cap', amount:50000, color:'#3b82f6'},
+    {id:'s2',name:'HDFC Mid Cap Fund',      amount:40000, color:'#6366f1'},
+    {id:'s3',name:'Bandhan Small Cap',      amount:30000, color:'#ef4444'},
+    {id:'s4',name:'Kotak Arbitrage',        amount:10000, color:'#0e9f6e'},
+    {id:'s5',name:'HDFC BAF',               amount:5000,  color:'#f59e0b'},
+  ]
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────
+function load(){ try{ return JSON.parse(localStorage.getItem('wp3'))||DEF; }catch{ return DEF; } }
+function persist(d){ localStorage.setItem('wp3', JSON.stringify(d)); }
+let D = load();
+
+// Restore prefs
+const prefs = JSON.parse(localStorage.getItem('wp3_prefs')||'{}');
+const theme = prefs.theme||'light';
+const size  = prefs.size||'md';
+document.documentElement.setAttribute('data-theme', theme);
+document.documentElement.setAttribute('data-size',  size);
+
+function savePrefs(p){ localStorage.setItem('wp3_prefs', JSON.stringify(p)); }
+
+// ── HELPERS ──────────────────────────────────────────────────────────────
+const INR = n => {
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(2)+'Cr';
+  if(n>=100000)   return '₹'+(n/100000).toFixed(2)+'L';
+  if(n>=1000)     return '₹'+(n/1000).toFixed(1)+'K';
+  return '₹'+Math.round(n).toLocaleString('en-IN');
+};
+const gainPct = (v,i) => { if(!i) return ''; const p=((v-i)/i*100); return (p>=0?'+':'')+p.toFixed(1)+'%'; };
+const gclass = (v,i) => v>i?'pos':v<i?'neg':'neu';
+const sum = a => a.reduce((s,x)=>s+x,0);
+const bycat = c => D.assets.filter(a=>a.cat===c);
+const catval = c => sum(bycat(c).map(a=>a.val));
+const total = () => sum(D.assets.map(a=>a.val)) + D.l1;
+const invested = () => sum(D.assets.map(a=>a.inv));
+
+function toast(msg, dur=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+
+// ── NAV ──────────────────────────────────────────────────────────────────
+let curPg='home';
+function nav(el,pg){
+  document.querySelectorAll('.bni').forEach(b=>b.classList.remove('act'));
+  el.classList.add('act');
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act'));
+  document.getElementById('pg-'+pg).classList.add('act');
+  curPg=pg; render(pg);
+}
+function render(pg){
+  if(pg==='home')     renderHome();
+  if(pg==='assets')   renderAssets();
+  if(pg==='buckets')  renderBuckets();
+  if(pg==='sip')      renderSip();
+  if(pg==='settings') renderSettings();
+}
+
+// ── HOME ─────────────────────────────────────────────────────────────────
+function renderHome(){
+  const tot=total(), inv=invested(), gain=tot-inv;
+  const eq=catval('equity')+catval('elss'), etf=catval('etf');
+  const ret=catval('retire'), liq=catval('liquidity')+D.l1;
+  const surplus=D.salary-D.expenses;
+  const sipTot=sum(D.sips.map(s=>s.amount));
+
+  const alloc=[
+    {label:'Retirement',val:ret,  color:'#0e9f6e'},
+    {label:'Equity MF', val:eq,   color:'#1a56db'},
+    {label:'ETF',       val:etf,  color:'#d97706'},
+    {label:'Liquidity', val:liq,  color:'#7c3aed'},
+  ];
+  const allocBar=alloc.map(a=>`<div style="flex:${(a.val/tot*100).toFixed(2)};background:${a.color};min-width:3px"></div>`).join('');
+  const allocLegend=alloc.map(a=>`<div class="alloc-item"><div class="alloc-dot" style="background:${a.color}"></div>${a.label} ${(a.val/tot*100).toFixed(0)}%</div>`).join('');
+
+  document.getElementById('pg-home').innerHTML=`
+    <div class="hero">
+      <div class="hero-lbl">Total Net Worth</div>
+      <div class="hero-amt">${INR(tot)}</div>
+      <div class="hero-sub">Invested ${INR(inv)} &nbsp;·&nbsp; <span style="color:${gain>=0?'#86efac':'#fca5a5'}">${gain>=0?'Gain':'Loss'} ${INR(Math.abs(gain))} (${gainPct(tot,inv)})</span></div>
+      <div class="hero-chips">
+        <div class="chip">Equity ${INR(eq+etf)}</div>
+        <div class="chip">Retirement ${INR(ret)}</div>
+        <div class="chip">Liquidity ${INR(liq)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-hd">Portfolio allocation</div>
+      <div class="card">
+        <div class="alloc-bar">${allocBar}</div>
+        <div class="alloc-legend">${allocLegend}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-hd">Monthly cashflow</div>
+      <div class="stat-grid">
+        <div class="card"><div class="stat-lbl">Take-home salary</div><div class="stat-val">${INR(D.salary)}</div><div class="stat-sub">per month</div></div>
+        <div class="card"><div class="stat-lbl">Monthly expenses</div><div class="stat-val">${INR(D.expenses)}</div><div class="stat-sub">household spend</div></div>
+        <div class="card"><div class="stat-lbl">Surplus</div><div class="stat-val" style="color:var(--blue)">${INR(surplus)}</div><div class="stat-sub">investable</div></div>
+        <div class="card"><div class="stat-lbl">SIP deployed</div><div class="stat-val">${INR(sipTot)}</div><div class="stat-sub">${(sipTot/surplus*100).toFixed(0)}% of surplus</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-hd">Equity corpus projection (12% CAGR)</div>
+      <div class="proj-row">
+        ${[1,3,5,10].map(yr=>{
+          const base=catval('equity')+catval('elss')+catval('etf');
+          const v=base*Math.pow(1.12,yr)+sipTot*12*((Math.pow(1.12,yr)-1)/0.12);
+          return `<div class="proj-cell"><div class="proj-yr">${yr} yr</div><div class="proj-amt">${INR(v)}</div></div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Equity MF + ETF base · SIP ${INR(sipTot)}/mo · simplified</div>
+    </div>
+    <div class="last-upd">Last updated · ${new Date(D.lastUpdated).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+  `;
+}
+
+// ── ASSETS ───────────────────────────────────────────────────────────────
+function renderAssets(){
+  const secs=[
+    {title:'Core equity — mutual funds', cats:['equity']},
+    {title:'ELSS (tax saving)',           cats:['elss']},
+    {title:'ETFs — opportunistic lumpsum',cats:['etf']},
+    {title:'Liquidity funds',             cats:['liquidity']},
+    {title:'Retirement / debt',           cats:['retire']},
+  ];
+  let html='';
+  secs.forEach(sec=>{
+    const items=D.assets.filter(a=>sec.cats.includes(a.cat));
+    if(!items.length) return;
+    html+=`<div class="section"><div class="sec-hd">${sec.title}</div>`;
+    items.forEach(a=>{
+      const p=gainPct(a.val,a.inv), pc=gclass(a.val,a.inv);
+      html+=`<div class="acard" onclick="editAsset('${a.id}')">
+        <div class="acard-icon" style="background:var(--${a.bg})">${a.icon}</div>
+        <div class="acard-body">
+          <div class="acard-name">${a.name}<span class="badge ${a.bd}">${a.tag}</span></div>
+          <div class="acard-meta">${a.meta}</div>
+        </div>
+        <div class="acard-right">
+          <div class="acard-val">${INR(a.val)}</div>
+          ${p?`<div class="acard-pnl ${pc}">${p}</div>`:''}
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  html+=`<div class="section"><div class="sec-hd">Emergency savings — IDFC First Bank</div>
+    <div class="acard" onclick="editL1()">
+      <div class="acard-icon" style="background:var(--card-icon-blue)">🏦</div>
+      <div class="acard-body">
+        <div class="acard-name">IDFC First Bank<span class="badge bd-blue">L1</span></div>
+        <div class="acard-meta">Target ${INR(D.expenses*4)} · 4 months expenses</div>
+      </div>
+      <div class="acard-right">
+        <div class="acard-val">${D.l1?INR(D.l1):'—'}</div>
+        <div class="acard-pnl neu">${D.l1?(D.l1/(D.expenses*4)*100).toFixed(0)+'% filled':'Not started'}</div>
+      </div>
+    </div>
+  </div>`;
+  const tot=total();
+  html+=`<div class="section"><div class="sec-hd">Summary</div>
+    <div class="card">
+      <div class="info-row"><span class="info-key">Total assets</span><span class="info-val">${INR(tot)}</span></div>
+      <div class="info-row"><span class="info-key">Total invested</span><span class="info-val">${INR(invested())}</span></div>
+      <div class="info-row"><span class="info-key">Overall gain/loss</span><span class="info-val ${gclass(tot,invested())}">${gainPct(tot,invested())}</span></div>
+    </div>
+  </div>`;
+  document.getElementById('pg-assets').innerHTML=html+`<div class="last-upd">Tap any card to update its value</div>`;
+}
+
+// ── BUCKETS ──────────────────────────────────────────────────────────────
+function renderBuckets(){
+  const baf=D.assets.find(a=>a.id==='baf');
+  const arb=D.assets.find(a=>a.id==='kotak');
+  const l1v=D.l1, l1t=D.expenses*4, l2v=arb.val, l2t=D.expenses*8, l3v=baf.val, l3t=D.expenses*48;
+  const cp=(v,t)=>Math.min(100,v/t*100);
+  const surplus=D.salary-D.expenses;
+  const sipTot=sum(D.sips.map(s=>s.amount));
+  const buckets=[
+    {name:'L1 — IDFC First Bank',  sub:'Instant access · savings account',         val:l1v,color:'#1a56db',target:l1t,pct:cp(l1v,l1t)},
+    {name:'L2 — Kotak Arbitrage',  sub:'Near-liquid · equity-taxed after 1yr',      val:l2v,color:'#0e9f6e',target:l2t,pct:cp(l2v,l2t)},
+    {name:'L3 — HDFC BAF',         sub:'Market-linked buffer · grows with equity',  val:l3v,color:'#d97706',target:l3t,pct:cp(l3v,l3t)},
+  ];
+  const mini=buckets.map((b,i)=>`<div class="bkt">
+    <div class="bkt-lbl">L${i+1}</div>
+    <div class="bkt-val">${b.val?INR(b.val):'—'}</div>
+    <div class="bkt-tgt">of ${INR(b.target)}</div>
+    <div class="bkt-bar"><div class="bkt-fill" style="width:${b.pct.toFixed(1)}%;background:${b.color}"></div></div>
+  </div>`).join('');
+  const detail=buckets.map(b=>{
+    const p=b.pct.toFixed(0);
+    const tbg=b.pct>=100?'#dcfce7':b.pct>=50?'#fef9c3':'#fee2e2';
+    const tc=b.pct>=100?'#166534':b.pct>=50?'#854d0e':'#991b1b';
+    return `<div class="bkt-detail">
+      <div class="bkt-drow">
+        <div><div class="bkt-dname">${b.name}</div><div class="bkt-dnote">${b.sub}</div></div>
+        <div class="bkt-pct" style="background:${tbg};color:${tc}">${p}%</div>
+      </div>
+      <div class="bkt-prog"><div class="bkt-prog-fill" style="width:${b.pct.toFixed(1)}%;background:${b.color}"></div></div>
+      <div class="bkt-nums"><span>${b.val?INR(b.val):'₹0'}</span><span>Need ${INR(Math.max(0,b.target-b.val))}</span><span>Target ${INR(b.target)}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('pg-buckets').innerHTML=`
+    <div class="section" style="margin-top:4px"><div class="sec-hd">3-layer liquidity ladder</div><div class="bkt-grid">${mini}</div></div>
+    <div class="section"><div class="sec-hd">Bucket detail</div>${detail}</div>
+    <div class="section"><div class="sec-hd">Refill capacity</div>
+      <div class="card">
+        <div class="info-row"><span class="info-key">Buffer (salary − expenses − SIPs)</span><span class="info-val" style="color:var(--blue)">${INR(surplus-sipTot)}</span></div>
+        <div class="info-row"><span class="info-key">Lumpsum (when received)</span><span class="info-val">Top up buckets first</span></div>
+        <div class="info-row"><span class="info-key">Refill order</span><span class="info-val">L1 → L2 → L3</span></div>
+      </div>
+    </div>
+    <div class="last-upd">Refill before deploying extra to equity</div>`;
+}
+
+// ── SIP ──────────────────────────────────────────────────────────────────
+function renderSip(){
+  const sipTot=sum(D.sips.map(s=>s.amount));
+  const surplus=D.salary-D.expenses;
+  const eq=catval('equity')+catval('elss')+catval('etf');
+  const bars=D.sips.map(s=>`<div class="sip-item" onclick="editSip('${s.id}')">
+    <div class="sip-row"><div class="sip-name">${s.name}</div><div class="sip-amt">${INR(s.amount)}</div></div>
+    <div class="sip-bar-track"><div class="sip-bar-fill" style="width:${(s.amount/sipTot*100).toFixed(1)}%;background:${s.color}"></div></div>
+  </div>`).join('');
+  const proj=[3,5,7,10].map(yr=>{
+    const v=eq*Math.pow(1.12,yr)+sipTot*12*((Math.pow(1.12,yr)-1)/0.12);
+    return `<div class="proj-cell"><div class="proj-yr">${yr} yr</div><div class="proj-amt">${INR(v)}</div></div>`;
+  }).join('');
+  document.getElementById('pg-sip').innerHTML=`
+    <div class="hero">
+      <div class="hero-lbl">Monthly SIP total</div>
+      <div class="hero-amt">${INR(sipTot)}</div>
+      <div class="hero-sub">${(sipTot/surplus*100).toFixed(0)}% of surplus · Free cash ${INR(surplus-sipTot)}</div>
+      <div class="hero-chips"><div class="chip">Equity base ${INR(eq)}</div></div>
+    </div>
+    <div class="section"><div class="sec-hd">SIP breakdown — tap to edit</div>${bars}</div>
+    <div class="section"><div class="sec-hd">Corpus projection (12% CAGR + SIP)</div>
+      <div class="proj-row">${proj}</div>
+      <div style="font-size:var(--fs-xs);color:var(--txt4);margin-top:8px">Base ${INR(eq)} · SIP ${INR(sipTot)}/mo</div>
+    </div>
+    <div class="section"><div class="sec-hd">Cashflow</div>
+      <div class="card">
+        <div class="info-row"><span class="info-key">Salary</span><span class="info-val">${INR(D.salary)}</span></div>
+        <div class="info-row"><span class="info-key">Expenses</span><span class="info-val">${INR(D.expenses)}</span></div>
+        <div class="info-row"><span class="info-key">Surplus</span><span class="info-val">${INR(surplus)}</span></div>
+        <div class="info-row"><span class="info-key">SIPs</span><span class="info-val">${INR(sipTot)}</span></div>
+        <div class="info-row"><span class="info-key">Free cash</span><span class="info-val pos">${INR(surplus-sipTot)}</span></div>
+      </div>
+    </div>
+    <div class="last-upd">Tap any SIP row to update amount</div>`;
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────
+function renderSettings(){
+  const pr=JSON.parse(localStorage.getItem('wp3_prefs')||'{}');
+  const isDark=(pr.theme||'light')==='dark';
+  const sz=pr.size||'md';
+  const sizes=['sm','md','lg','xl'];
+  const sizeLabels={sm:'Small',md:'Medium',lg:'Large',xl:'X-Large'};
+  const pills=sizes.map(s=>`<button class="size-pill${s===sz?' act':''}" onclick="setSize('${s}')">${sizeLabels[s]}</button>`).join('');
+
+  document.getElementById('pg-settings').innerHTML=`
+    <div class="settings-section" style="margin-top:8px">
+      <div class="settings-title">Appearance</div>
+      <div class="settings-card">
+        <div class="srow">
+          <div class="srow-left">
+            <div class="srow-label">Dark mode</div>
+            <div class="srow-sub">Easy on eyes at night</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" ${isDark?'checked':''} onchange="toggleTheme(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+        <div class="srow">
+          <div class="srow-left">
+            <div class="srow-label">Text size</div>
+            <div class="srow-sub">Adjust for your screen</div>
+          </div>
+          <div class="size-pills">${pills}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">Data backup</div>
+      <div class="settings-card">
+        <div class="srow">
+          <div class="srow-left">
+            <div class="srow-label">Export data</div>
+            <div class="srow-sub">Download your portfolio as JSON</div>
+          </div>
+        </div>
+        <div class="srow">
+          <div class="srow-left">
+            <div class="srow-label">Import data</div>
+            <div class="srow-sub">Restore from a JSON backup</div>
+          </div>
+        </div>
+        <div class="srow">
+          <div class="srow-left">
+            <div class="srow-label">Reset to defaults</div>
+            <div class="srow-sub">Clear all data and start fresh</div>
+          </div>
+        </div>
+      </div>
+      <div class="backup-btns">
+        <button class="btn-backup btn-export" onclick="exportJSON()">⬇ Export JSON backup</button>
+        <button class="btn-backup btn-import" onclick="document.getElementById('file-input').click()">⬆ Import JSON backup</button>
+        <button class="btn-backup btn-reset"  onclick="resetData()">↺ Reset to defaults</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-title">About</div>
+      <div class="settings-card">
+        <div class="srow"><div class="srow-left"><div class="srow-label">WealthPilot</div><div class="srow-sub">Personal finance tracker · all data on your device</div></div></div>
+        <div class="srow">
+          <div class="srow-left"><div class="srow-label">Last updated</div></div>
+          <div style="font-size:var(--fs-xs);color:var(--txt4);font-family:var(--mono)">${new Date(D.lastUpdated).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+        </div>
+        <div class="srow">
+          <div class="srow-left"><div class="srow-label">Net worth</div></div>
+          <div style="font-size:var(--fs-sm);font-weight:700;color:var(--blue);font-family:var(--mono)">${INR(total())}</div>
+        </div>
+      </div>
+    </div>
+    <div class="last-upd">All data stored locally on your device only</div>
+  `;
+}
+
+// ── THEME & SIZE ─────────────────────────────────────────────────────────
+function toggleTheme(dark){
+  const t=dark?'dark':'light';
+  document.documentElement.setAttribute('data-theme',t);
+  const pr=JSON.parse(localStorage.getItem('wp3_prefs')||'{}');
+  pr.theme=t; savePrefs(pr);
+  document.getElementById('themeColor').setAttribute('content', dark?'#0f1117':'#ffffff');
+  toast(dark?'Dark mode on':'Light mode on');
+}
+
+function setSize(s){
+  document.documentElement.setAttribute('data-size',s);
+  const pr=JSON.parse(localStorage.getItem('wp3_prefs')||'{}');
+  pr.size=s; savePrefs(pr);
+  document.querySelectorAll('.size-pill').forEach(p=>{
+    p.classList.toggle('act', p.textContent.toLowerCase()===({sm:'small',md:'medium',lg:'large',xl:'x-large'}[s]));
+  });
+  toast('Text size updated');
+}
+
+// ── BACKUP ───────────────────────────────────────────────────────────────
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='wealthpilot-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('Backup exported');
+}
+
+function importJSON(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const parsed=JSON.parse(ev.target.result);
+      if(!parsed.assets||!parsed.sips) throw new Error('Invalid format');
+      D=parsed; persist(D);
+      render(curPg);
+      toast('Data imported successfully');
+    }catch{
+      toast('Import failed — invalid JSON');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function resetData(){
+  if(!confirm('Reset all data to defaults? This cannot be undone.')) return;
+  D={...DEF, lastUpdated:new Date().toISOString()};
+  persist(D); render(curPg);
+  toast('Reset to defaults');
+}
+
+// ── EDIT MODALS ──────────────────────────────────────────────────────────
+let mMode=null;
+function openModal(title,sub,fields,mode){
+  mMode=mode;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-sub').textContent=sub;
+  document.getElementById('modal-fields').innerHTML=fields;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); mMode=null; }
+
+function openGlobalEdit(){
+  openModal('Update values','Salary, expenses & retirement balances',`
+    <div class="field"><div class="field-lbl">Monthly salary (₹)</div><input class="field-inp" id="f-sal" type="number" value="${D.salary}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">Monthly expenses (₹)</div><input class="field-inp" id="f-exp" type="number" value="${D.expenses}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">EPF balance (₹)</div><input class="field-inp" id="f-epf" type="number" value="${D.assets.find(a=>a.id==='epf').val}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">PPF balance (₹)</div><input class="field-inp" id="f-ppf" type="number" value="${D.assets.find(a=>a.id==='ppf').val}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">NPS balance (₹)</div><input class="field-inp" id="f-nps" type="number" value="${D.assets.find(a=>a.id==='nps').val}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">IDFC First Bank (₹)</div><input class="field-inp" id="f-l1" type="number" value="${D.l1}" inputmode="numeric"></div>
+  `,'global');
+}
+
+function editAsset(id){
+  const a=D.assets.find(x=>x.id===id);
+  openModal(a.name,'Update current value and cost basis',`
+    <div class="field"><div class="field-lbl">Current value (₹)</div><input class="field-inp" id="f-val" type="number" value="${a.val}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">Invested / cost basis (₹)</div><input class="field-inp" id="f-inv" type="number" value="${a.inv}" inputmode="numeric"></div>
+    <div class="field"><div class="field-lbl">Units / notes</div><input class="field-inp" id="f-meta" type="text" value="${a.meta}"></div>
+  `,'asset:'+id);
+}
+
+function editL1(){
+  openModal('IDFC First Bank','Update emergency fund balance',`
+    <div class="field"><div class="field-lbl">Current balance (₹)</div><input class="field-inp" id="f-l1b" type="number" value="${D.l1}" inputmode="numeric"></div>
+  `,'l1');
+}
+
+function editSip(id){
+  const s=D.sips.find(x=>x.id===id);
+  openModal(s.name,'Update monthly SIP amount',`
+    <div class="field"><div class="field-lbl">Monthly SIP amount (₹)</div><input class="field-inp" id="f-sipamt" type="number" value="${s.amount}" inputmode="numeric"></div>
+  `,'sip:'+id);
+}
+
+function saveModal(){
+  if(mMode==='global'){
+    D.salary   = +document.getElementById('f-sal').value||D.salary;
+    D.expenses = +document.getElementById('f-exp').value||D.expenses;
+    D.assets.find(a=>a.id==='epf').val = +document.getElementById('f-epf').value;
+    D.assets.find(a=>a.id==='ppf').val = +document.getElementById('f-ppf').value;
+    D.assets.find(a=>a.id==='nps').val = +document.getElementById('f-nps').value;
+    D.l1 = +document.getElementById('f-l1').value;
+  } else if(mMode&&mMode.startsWith('asset:')){
+    const a=D.assets.find(x=>x.id===mMode.split(':')[1]);
+    a.val  = +document.getElementById('f-val').value;
+    a.inv  = +document.getElementById('f-inv').value;
+    a.meta = document.getElementById('f-meta').value;
+  } else if(mMode==='l1'){
+    D.l1 = +document.getElementById('f-l1b').value;
+  } else if(mMode&&mMode.startsWith('sip:')){
+    const s=D.sips.find(x=>x.id===mMode.split(':')[1]);
+    s.amount = +document.getElementById('f-sipamt').value||s.amount;
+  }
+  D.lastUpdated=new Date().toISOString();
+  persist(D); closeModal(); render(curPg);
+  toast('Saved');
+}
+
+// ── INIT ────────────────────────────────────────────────────────────────
+document.getElementById('hdrDate').textContent=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
+renderHome();
+
+// Inline SW for offline support
+if('serviceWorker' in navigator){
+  const sw=`const C='wp-v3';
+self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll([location.pathname]))));
+self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+  const rc=res.clone();caches.open(C).then(c=>c.put(e.request,rc));return res;
+}))));`;
+  const blob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+// Inline manifest
+const mf={name:'WealthPilot',short_name:'WealthPilot',display:'standalone',
+  background_color:'#ffffff',theme_color:'#1a56db',start_url:'./',orientation:'portrait',
+  icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%231a56db'/%3E%3Cpolyline points='28,130 72,76 100,106 164,42' fill='none' stroke='white' stroke-width='18' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",sizes:'192x192',type:'image/svg+xml'}]};
+const ml=document.createElement('link');ml.rel='manifest';
+ml.href='data:application/json,'+encodeURIComponent(JSON.stringify(mf));
+document.head.appendChild(ml);
+</script>
+</body>
+</html>
